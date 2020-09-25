@@ -15,6 +15,12 @@ RM := rm -rf
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(strip $(S_DEPS)),)
+-include $(S_DEPS)
+endif
+ifneq ($(strip $(S_UPPER_DEPS)),)
+-include $(S_UPPER_DEPS)
+endif
 ifneq ($(strip $(C_DEPS)),)
 -include $(C_DEPS)
 endif
@@ -40,8 +46,8 @@ test_project_10_CAN_interrupts.bin \
 all: test_project_10_CAN_interrupts.elf secondary-outputs
 
 # Tool invocations
-test_project_10_CAN_interrupts.elf: $(OBJS) $(USER_OBJS) C:\Users\IvanB.HEL-KONSTR7\Documents\GitHub\motor_repository_10\STM32G431KBTX_FLASH.ld
-	arm-none-eabi-gcc -o "test_project_10_CAN_interrupts.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\IvanB.HEL-KONSTR7\Documents\GitHub\motor_repository_10\STM32G431KBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="test_project_10_CAN_interrupts.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+test_project_10_CAN_interrupts.elf: $(OBJS) $(USER_OBJS) C:\Users\IvanB.HEL-KONSTR7\Documents\GitHub\project_10_CAN_interrupts\STM32G431KBTX_FLASH.ld
+	arm-none-eabi-gcc -o "test_project_10_CAN_interrupts.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\IvanB.HEL-KONSTR7\Documents\GitHub\project_10_CAN_interrupts\STM32G431KBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="test_project_10_CAN_interrupts.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
