@@ -230,8 +230,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
   CAN_previous_message_buffer_init((uint8_t)sizeof(CAN_previous_message_buffer), CAN_previous_message_buffer);
 
-  //HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0);
-  //HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_TX_FIFO_EMPTY, FDCAN_TX_BUFFER0);
   HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0);
   //HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER0);
   HAL_FDCAN_Start(&hfdcan1);

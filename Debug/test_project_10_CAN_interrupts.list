@@ -758,8 +758,6 @@ int main(void)
  8000776:	2008      	movs	r0, #8
  8000778:	f7ff fece 	bl	8000518 <CAN_previous_message_buffer_init>
 
-  //HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0);
-  //HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_TX_FIFO_EMPTY, FDCAN_TX_BUFFER0);
   HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0);
  800077c:	2201      	movs	r2, #1
  800077e:	2101      	movs	r1, #1
