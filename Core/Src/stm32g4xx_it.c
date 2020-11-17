@@ -207,11 +207,9 @@ void FDCAN1_IT0_IRQHandler(void)
   /* USER CODE END FDCAN1_IT0_IRQn 0 */
   HAL_FDCAN_IRQHandler(&hfdcan1);
   /* USER CODE BEGIN FDCAN1_IT0_IRQn 1 */
-  uint8_t test_data[8] = {0, 1, 0, 0, 0, 0, 0, 0};
-  test_data[0] = can_message_counter;
-  CAN_test_transmit(&hfdcan1, test_data);
+
   //uart_send_int32_t(&huart2, can_message_counter);
-  can_message_counter++;
+
   /* USER CODE END FDCAN1_IT0_IRQn 1 */
 }
 

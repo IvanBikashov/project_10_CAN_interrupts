@@ -70,30 +70,6 @@ static void MX_FDCAN1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void uart_send_int32_t(UART_HandleTypeDef* uart_instance, int32_t value_to_send)
-{
-	char UART_message_char[UART_MESSAGE_SIZE];
-	for (uint8_t i = 0; i<sizeof(UART_message_char); i++)				// инициализация массива
-	{
-		UART_message_char[i] = ' ';
-	}
-	sprintf(UART_message_char, "%d", (int)value_to_send);
-
-	uint8_t UART_message_int[UART_MESSAGE_SIZE];						// создаём массив типа uint8_t и заполняем значениями из char-массива. Получаем массив с кодами символов в ASCII.
-	for (uint8_t i = 0; i<sizeof(UART_message_int); i++)
-	{
-		UART_message_int[i] = UART_message_char[i];
-	}
-	HAL_UART_Transmit(uart_instance, &UART_message_int[0], UART_MESSAGE_SIZE, UART_MESSAGE_TIMEOUT);
-
-	char line_break_char[] = "\r\n";									// создаём и посылаем массив с переносом строки и возвратом каретки (для читабельности)
-	uint8_t line_break_int[2];
-	for (uint8_t i = 0; i<sizeof(line_break_int); i++)
-	{
-		line_break_int[i] = line_break_char[i];
-	}
-	HAL_UART_Transmit(uart_instance, &line_break_int[0], sizeof(line_break_int), UART_MESSAGE_TIMEOUT);
-}
 
 void CAN_previous_message_buffer_init(uint8_t CAN_message_size, uint8_t* CAN_previous_message_buffer_pointer)
 {
@@ -107,28 +83,13 @@ _Bool check_CAN_buffer (FDCAN_HandleTypeDef *hfdcan, uint8_t* CAN_previous_messa
 {
 	FDCAN_RxHeaderTypeDef rx_header = CAN_rx_header_get();							// получаем наш собственный заголовок для CAN-сообщения
 	uint8_t rx_data_buffer[CAN_MESSAGE_SIZE];										// создаём массив, в который будет помещено новое CAN-сообщение
-	for (int i = 0; i < sizeof(rx_data_buffer); i++)
-	{
-		rx_data_buffer[i] = 0;														// инициализируем созданный массив нулями (ЭТО ВАЖНО!!! �?наче в считанном CAN-сообщении появится мусор)
-	}
+
 	HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data_buffer);		// считываем содержимое FIFO-буфера CAN, помещаем в созданный массив
 
-	_Bool CAN_message_changed = 0;													// флаг, сообщающий, что новое содержимое FIFO-буфера CAN отличается от предыдущего
-	for (int i = 0; i < CAN_MESSAGE_SIZE; i++)
-	{
-		if (rx_data_buffer[i] != *(CAN_previous_message_buffer_pointer + i))		// если считанное содержимое CAN-сообщения отличается от предыдущего
-		{
-			*(CAN_previous_message_buffer_pointer + i) = rx_data_buffer[i];			// записываем в буфер для старого сообщения новое сообщение
-			CAN_message_changed = 1;												// выставляем флаг, что пришло новое сообщение
-		}
-	}
+	CAN_message_decode(rx_data_buffer);							// запускаем расшифровку сообщения
 
-	if (CAN_message_changed)														// если пришло новое сообщение
-	{
-		CAN_message_decode(rx_data_buffer);							// запускаем расшифровку сообщения
-	}
 
-	return CAN_message_changed;
+	return 1;
 }
 
 void CAN_message_decode(uint8_t* rx_data_buffer_pointer)
@@ -143,8 +104,8 @@ void CAN_message_decode(uint8_t* rx_data_buffer_pointer)
 	if (recieved_command == STOP_CAN_INTERRUPTS)										// если номер команды соответствует команде "изменить координату мотора"
 	{
 		uint8_t test_data[8] = {0, 1, 2, 3, 0, 0, 0, 0};
-		CAN_test_transmit(&hfdcan1, test_data);
-		HAL_FDCAN_DeactivateNotification(&hfdcan1, FDCAN_IT_TX_COMPLETE);
+		//CAN_test_transmit(&hfdcan1, test_data);
+		//HAL_FDCAN_DeactivateNotification(&hfdcan1, FDCAN_IT_TX_COMPLETE);
 	}
 }
 
@@ -228,14 +189,15 @@ int main(void)
   MX_USART2_UART_Init();
   MX_FDCAN1_Init();
   /* USER CODE BEGIN 2 */
-  CAN_previous_message_buffer_init((uint8_t)sizeof(CAN_previous_message_buffer), CAN_previous_message_buffer);
 
-  HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0);
+  //HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0);
+  //HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_TX_FIFO_EMPTY, FDCAN_TX_BUFFER0);
+  //HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0);
   //HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER0);
   HAL_FDCAN_Start(&hfdcan1);
-  //uint8_t test_data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-  //CAN_test_transmit(&hfdcan1, test_data);
+  HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, FDCAN_TX_BUFFER0);
 
+  uint8_t test_data[8] = {1, 2, 3, 4, 5, 6,7, 8};
 
 
   /* USER CODE END 2 */
@@ -245,9 +207,10 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  HAL_Delay(500);
+	  CAN_test_transmit(&hfdcan1, test_data);
     /* USER CODE BEGIN 3 */
-	check_CAN_buffer(&hfdcan1, CAN_previous_message_buffer);
+	//check_CAN_buffer(&hfdcan1, CAN_previous_message_buffer);
   }
   /* USER CODE END 3 */
 }
