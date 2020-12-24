@@ -207,8 +207,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_Delay(500);
-	  CAN_test_transmit(&hfdcan1, test_data);
+
     /* USER CODE BEGIN 3 */
 	//check_CAN_buffer(&hfdcan1, CAN_previous_message_buffer);
   }
